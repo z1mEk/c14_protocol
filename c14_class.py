@@ -32,7 +32,7 @@ class C14:
     def CalcCSum(self, bFrame):
         i = 0
         cSum = 0
-	for x in bFrame:
+        for x in bFrame:
             if i != 2:
                 cSum += x
             i += 1
@@ -48,7 +48,7 @@ class C14:
 
     def ReadSerial(self):
         SendFrame = 0 #TODO: Add SendFrame
-	ReceiveFrame = SerialRequest(SendFrame)
+        ReceiveFrame = SerialRequest(SendFrame)
         return 0
 
     # Read Temperatures
