@@ -35,7 +35,7 @@ class C14_RS485:
 
     # Read from serial Port
     def SerialRequest(self, RequestFrame):
-        RequestFrame[2] = CalcCSum(SendFrame)
+        RequestFrame[2] = CalcCSum(RequestFrame)
 	RequestFrame[29] = ord('#')
         try:
             ser = serial.Serial(self.SerialPort, self.BaudRate, timeout=1)
