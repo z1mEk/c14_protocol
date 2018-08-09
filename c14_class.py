@@ -36,7 +36,7 @@ class C14_RS485:
     # Read from serial Port
     def SerialRequest(self, RequestFrame):
         RequestFrame[2] = CalcCSum(RequestFrame)
-	RequestFrame[29] = ord('#')
+        RequestFrame[29] = ord('#')
         try:
             ser = serial.Serial(self.SerialPort, self.BaudRate, timeout=1)
             ser.setRTS(0) # RTS=1,~RTS=0 so ~RE=0, Receive mode enabled for MAX485
