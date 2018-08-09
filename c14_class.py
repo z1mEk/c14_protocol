@@ -7,15 +7,16 @@
 # update date: 2018-08-09
 ######################################################################################
 
-#TODO: add log
-
-import serial, time
+import serial, time, logging
 
 class C14_RS485:
 
-    def __init__(self):
-        self.SerialPort = "/dev/ttyUSB0"           # Device name of the serial port (USB adapter > RS485). TODO: change to init parameter.
-        self.BaudRate = 9600                       # Serial baud rate
+    def __init__(self, SerialPort):
+        self.SerialPort = SerialPort
+        self.BaudRate = 9600
+
+        logging.basicConfig(filename='/home/pi/C14_class.log', level=logging.DEBUG) # For silent set logging.CRTITICAL, please set path to log file.
+        logging.debug('Started')
 
     # Calculate checksum
     # @param self, bytearray(30) bFrame
@@ -39,27 +40,38 @@ class C14_RS485:
         else:
             return 0
 
-    # Read frame from serial Port
+    # Read frame from serial port
     # @param self, bytearray(30) bFrame
-    # @return bytearray(30)
+    # @return int
     def SerialRequest(self, byref(bFrame)):
         bFrame[2] = CalcChecksum(bFrame)
         bFrame[29] = ord('#')
         try:
+            logging.debug('Open serial...')
             ser = serial.Serial(self.SerialPort, self.BaudRate, timeout=1)
             ser.setRTS(0) # RTS=1,~RTS=0 so ~RE=0, Receive mode enabled for MAX485
             ser.setDTR(0)
             ser.open()
+            logging.debug('OK')
+            logging.debug('Write query...')
+            logging.debug('Send data: '.join("{:02x}".format(x) for x in bFrame)
             ser.write(bFrame) # send request frame
+            logging.debug('OK')
             time.sleep(3) # set empirically
+            logging.debug('Read frame...')
             bFrame = bytearray(ser.read(size=self.FrameSize)) # receive request frame
+            logging.debug('Receive data: '.join("{:02x}".format(x) for x in bFrame)
+            logging.debug('OK')
             ser.close()
         except serial.SerialException:
+            logging.debug('Serial error!')
             continue
 
         if ValidChecksum(bFrame):
+            logging.debug('Checksum OK')
             return 1
         else:
+            logging.debug('Invalid Checksum')
             return 0
 
     # Read values to array
