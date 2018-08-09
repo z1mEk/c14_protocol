@@ -7,6 +7,8 @@
 # update date: 2018-08-09
 ######################################################################################
 
+#TODO: add log
+
 import serial, time
 
 class C14_RS485:
@@ -15,10 +17,10 @@ class C14_RS485:
         self.SerialPort = "/dev/ttyUSB0"           # Device name of the serial port (USB adapter > RS485). TODO: change to init parameter.
         self.BaudRate = 9600                       # Serial baud rate
 
-    # Calculate control sum
+    # Calculate checksum
     # @param self, bytearray(30) bFrame
     # @return byte
-    def CalcCSum(self, bFrame):
+    def CalcChecksum(self, bFrame):
         i = 0
         cSum = 0
         for x in bFrame:
@@ -27,21 +29,21 @@ class C14_RS485:
             i += 1
         return cSum & 0x7f
 
-    # Check control sum
+    # Validate checksum
     # @param self, bytearray(30) bFrame
     # @return int
-    def CheckCSum(self, bFrame):
-        cSum = self.CalcCSum(bFrame)
+    def ValidChecksum(self, bFrame):
+        cSum = self.CalcChecksum(bFrame)
         if cSUM == bFrame[2]:
             return 1
         else:
             return 0
 
-    # Read from serial Port
+    # Read frame from serial Port
     # @param self, bytearray(30) bFrame
     # @return bytearray(30)
     def SerialRequest(self, byref(bFrame)):
-        bFrame[2] = CalcCSum(bFrame)
+        bFrame[2] = CalcChecksum(bFrame)
         bFrame[29] = ord('#')
         try:
             ser = serial.Serial(self.SerialPort, self.BaudRate, timeout=1)
@@ -55,13 +57,12 @@ class C14_RS485:
         except serial.SerialException:
             continue
 
-        if CheckCSum(bFrame):
+        if ValidChecksum(bFrame):
             return 1
         else:
             return 0
 
-    # Function ReadValues
-    # Read frames
+    # Read values to array
     # @param self, char ['T'=temperature/'R'=other parameters] ValueType, byte RecipientAddress, byte SenderAddress, array [max array(6)] ValueNumbers
     # @return array
     def ReadValues(self, ValueType, RecipientAddress, SenderAddress, ValueNumbers):
