@@ -59,7 +59,7 @@ class C14_RS485:
             logging.debug('OK')
             time.sleep(3) # set empirically
             logging.debug('Read frame...')
-            bFrame = bytearray(ser.read(size=self.FrameSize)) # receive request frame
+            bFrame = bytearray(ser.read(size=len(bFrame))) # receive request frame
             logging.debug('Receive data: '.join("{:02x}".format(x) for x in bFrame)
             logging.debug('OK')
             ser.close()
