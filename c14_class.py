@@ -31,11 +31,11 @@ class C14:
     # Calculate control sum
     def CalcCSum(self, bFrame):
         i = 0
+        cSum = 0
 	for x in bFrame:
             if i != 2:
-                xSum += x
+                cSum += x
             i += 1
-            cSum = xSUM
         return cSum & 0x7 #TODO: truncate to last 7 bits - check????
 
     # Check control sum
