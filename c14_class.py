@@ -11,19 +11,34 @@ import serial, time
 
 class C14:
     def __init__(self):
-        SERIALPORT = "/dev/ttyUSB0" # device name of the serial port (USB adapter> RS485).
-        BAUDRATE = 9600 # Baud rate
+        self.SerialPort = "/dev/ttyUSB0" # Device name of the serial port (USB adapter > RS485).
+        self.BaudRate = 9600             # Serial baud rate
+        self.FrameSize = 30              # Size of frame
 
-    def ReadFromSerial(self, byRef(SendFrame)):
-        return 0
+    # Read from serial Port
+    def SerialRequest(self, RequestFrame):
+        try:
+            ser = serial.Serial(self.SerialPort, self.BaudRate, timeout=1)
+            ser.open()
+            ser.write(RequestFrame)
+            time.sleep(3) # to test
+            ReceiveFrame = ser.read(size=self.FrameSize)
+            ser.close()
+        except serial.SerialException:
+            continue
+        return ReceiveFrame
 
-    def WriteToSerial(self, byRef(SendFrame)):
-        return 0
-
+    # Calculate control sum
     def CalcCSum(self, bFrame):
-        cSum = 0
-        return cSum
+        i = 0
+	for x in bFrame:
+            if i != 2:
+                xSum += x
+            i += 1
+            cSum = xSUM
+        return cSum & 0x7 #TODO: truncate to last 7 bits - check????
 
+    # Check control sum
     def CheckCSum(self, bFrame, CompCSum):
         cSum = self.CalcCSum(bFrame)
         if cSUM == CompCSum:
@@ -31,14 +46,25 @@ class C14:
 	else:
             return 0
 
-    def ReadTemps(self, SendFrame):
-        RecFrame = SendFrame
+    def ReadSerial(self):
+        SendFrame = 0 #TODO: Add SendFrame
+	ReceiveFrame = SerialRequest(SendFrame)
+        return 0
+
+    # Read Temperatures
+    def ReadTemps(self):
+        #TODO: Add read temps
+        RecFrame = self.ReadSerial()
         return RecFrame
 
-    def ReadParams(self, SendFrame):
-        RecFrame = SendFrame
+    # Read other parameters
+    def ReadParams(self):
+	#TODO: Add read parametes
+        RecFrame = self.ReadSerial()
         return RecFrame
 
-    def WriteParams(self, SendFrame):
-        RecFrame = SendFrame
+    # Write parameters
+    def WriteParams(self):
+        #TODO: Add write parameters
+        RecFrame = self.ReadSerial()
         return RecFrame
