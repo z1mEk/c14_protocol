@@ -7,7 +7,18 @@
 # update date: 2018-08-09
 ######################################################################################
 
+import serial, time
+
 class C14:
+    def __init__(self):
+        SERIALPORT = "/dev/ttyUSB0" # device name of the serial port (USB adapter> RS485).
+        BAUDRATE = 9600 # Baud rate
+
+    def ReadFromSerial(self, byRef(SendFrame)):
+        return 0
+
+    def WriteToSerial(self, byRef(SendFrame)):
+        return 0
 
     def CalcCSum(self, bFrame):
         cSum = 0
