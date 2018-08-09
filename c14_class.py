@@ -78,7 +78,7 @@ class C14_RS485:
         vnr = 7
         arVal = [0, 0, 0, 0, 0, 0] # ??
         for i in range(0, len(ValueNumbers)):
-            arVal[i] = bFrame[tnr] << 8 | bFrame[tnr + 1]
+            arVal[i] = bFrame[vnr] << 8 | bFrame[vnr + 1]
             vnr += 4
         return arVal
 
