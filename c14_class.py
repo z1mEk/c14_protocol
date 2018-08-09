@@ -11,26 +11,12 @@ import serial, time
 
 class C14:
     def __init__(self):
-        self.SerialPort = "/dev/ttyUSB0" # Device name of the serial port (USB adapter > RS485).
-        self.BaudRate = 9600             # Serial baud rate
-        self.FrameSize = 30              # Size of frame
+        self.SerialPort = "/dev/ttyUSB0"           # Device name of the serial port (USB adapter > RS485). TODO: change to init parameter.
+        self.BaudRate = 9600                       # Serial baud rate
+        self.RequestFrame = b'\0' * 30             # Empty buffor frame
+        self.FrameSize = len(self.RequestFrame)    # Size of frame
 
-    # Read from serial Port
-    def SerialRequest(self, RequestFrame):
-        try:
-            ser = serial.Serial(self.SerialPort, self.BaudRate, timeout=1)
-            ser.setRTS(0) # RTS=1,~RTS=0 so ~RE=0, Receive mode enabled for MAX485
-            ser.setDTR(0)
-            ser.open()
-            ser.write(RequestFrame)
-            time.sleep(3) # to test
-            ReceiveFrame = ser.read(size=self.FrameSize)
-            ser.close()
-        except serial.SerialException:
-            continue
-        return ReceiveFrame
-
-    # Calculate control sum
+   # Calculate control sum
     def CalcCSum(self, bFrame):
         i = 0
         cSum = 0
@@ -45,34 +31,50 @@ class C14:
         cSum = self.CalcCSum(bFrame)
         if cSUM == bFrame[2]:
             return 1
-	else:
+        else:
             return 0
 
-    def ReadSerial(self, SendFrame):
-	SendFrame[2] = CalcCSum(SendFrame)
-        ReceiveFrame = SerialRequest(SendFrame)
-	if CheckCSum(ReceiveFrame):
-            print("Checksum OK!")
-            ret = ReceiveFrame
+    # Read from serial Port
+    def SerialRequest(self, RequestFrame):
+        RequestFrame[2] = CalcCSum(SendFrame)
+	RequestFrame[29] = ord('#')
+        try:
+            ser = serial.Serial(self.SerialPort, self.BaudRate, timeout=1)
+            ser.setRTS(0) # RTS=1,~RTS=0 so ~RE=0, Receive mode enabled for MAX485
+            ser.setDTR(0)
+            ser.open()
+            ser.write(RequestFrame) # send request frame
+            time.sleep(3) # set empirically
+            ReceiveFrame = bytearray(ser.read(size=self.FrameSize)) # receive request frame
+            ser.close()
+        except serial.SerialException:
+            continue
+
+        if CheckCSum(ReceiveFrame):
+            return ReceiveFrame
         else:
-            print("Invalid checksum!")
-            ret = -1
-        return ret
+            return -1
 
     # Read Temperatures
     def ReadTemps(self):
         #TODO: Add read temps
-        RecFrame = self.ReadSerial(SendFrame)
+	RequestFrame = self.RequestFrame
+	RequestFrame[1] = ord('T')
+        RecFrame = self.SerialRequest(RequestFrame)
         return RecFrame
 
     # Read other parameters
     def ReadParams(self):
 	#TODO: Add read parametes
-        RecFrame = self.ReadSerial(SendFrame)
+        RequestFrame = self.RequestFrame
+        RequestFrame[1] = ord('R')
+        RecFrame = self.SerialRequest(RequestFrame)
         return RecFrame
 
     # Write parameters
     def WriteParams(self):
         #TODO: Add write parameters
-        RecFrame = self.ReadSerial(SendFrame)
+        RequestFrame = self.RequestFrame
+        RequestFrame[1] = ord('W')
+        RecFrame = self.SerialRequest(RequestFrame)
         return RecFrame
