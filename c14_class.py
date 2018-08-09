@@ -19,6 +19,8 @@ class C14:
     def SerialRequest(self, RequestFrame):
         try:
             ser = serial.Serial(self.SerialPort, self.BaudRate, timeout=1)
+            ser.setRTS(0) # RTS=1,~RTS=0 so ~RE=0, Receive mode enabled for MAX485
+            ser.setDTR(0)
             ser.open()
             ser.write(RequestFrame)
             time.sleep(3) # to test
@@ -36,35 +38,41 @@ class C14:
             if i != 2:
                 cSum += x
             i += 1
-        return cSum & 0x7 #TODO: truncate to last 7 bits - check????
+        return cSum & 0x7
 
     # Check control sum
-    def CheckCSum(self, bFrame, CompCSum):
+    def CheckCSum(self, bFrame):
         cSum = self.CalcCSum(bFrame)
-        if cSUM == CompCSum:
+        if cSUM == bFrame[2]:
             return 1
 	else:
             return 0
 
-    def ReadSerial(self):
-        SendFrame = 0 #TODO: Add SendFrame
+    def ReadSerial(self, SendFrame):
+	SendFrame[2] = CalcCSum(SendFrame)
         ReceiveFrame = SerialRequest(SendFrame)
-        return 0
+	if CheckCSum(ReceiveFrame):
+            print("Checksum OK!")
+            ret = ReceiveFrame
+        else:
+            print("Invalid checksum!")
+            ret = -1
+        return ret
 
     # Read Temperatures
     def ReadTemps(self):
         #TODO: Add read temps
-        RecFrame = self.ReadSerial()
+        RecFrame = self.ReadSerial(SendFrame)
         return RecFrame
 
     # Read other parameters
     def ReadParams(self):
 	#TODO: Add read parametes
-        RecFrame = self.ReadSerial()
+        RecFrame = self.ReadSerial(SendFrame)
         return RecFrame
 
     # Write parameters
     def WriteParams(self):
         #TODO: Add write parameters
-        RecFrame = self.ReadSerial()
+        RecFrame = self.ReadSerial(SendFrame)
         return RecFrame
