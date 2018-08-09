@@ -63,8 +63,8 @@ class C14_RS485:
             return 0
 
     # Read values to array
-    # @param self, char ['T'=temperature/'R'=other parameters] ValueType, byte RecipientAddress, byte SenderAddress, array [max array(6)] ValueNumbers
-    # @return array
+    # @param self, char ['T'=temperature/'R'=other parameters] ValueType, byte RecipientAddress, byte SenderAddress, list [max list(6)] ValueNumbers
+    # @return list
     def ReadValues(self, ValueType, RecipientAddress, SenderAddress, ValueNumbers):
         bFrame = b'\0' * 30
         bFrame[0] = 128 + RecipientAddress
@@ -75,11 +75,11 @@ class C14_RS485:
             bFrame[i] = vnr / 128
             bFrame[i + 1] = vnr % 128
             i += 4
-        ret = self.SerialRequest(bFrame)
+        self.SerialRequest(bFrame)
         vnr = 7
-        arVal = [0, 0, 0, 0, 0, 0] # ??
+        arVal = []
         for i in range(0, len(ValueNumbers)):
-            arVal[i] = bFrame[vnr] << 8 | bFrame[vnr + 1]
+            arVal.append(bFrame[vnr] << 8 | bFrame[vnr + 1])
             vnr += 4
         return arVal
 
