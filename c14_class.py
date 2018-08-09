@@ -16,6 +16,8 @@ class C14_RS485:
         self.BaudRate = 9600                       # Serial baud rate
 
     # Calculate control sum
+    # @param self, bytearray(30) bFrame
+    # @return byte
     def CalcCSum(self, bFrame):
         i = 0
         cSum = 0
@@ -23,9 +25,11 @@ class C14_RS485:
             if i != 2:
                 cSum += x
             i += 1
-        return cSum & 0x7f # ?? check
+        return cSum & 0x7f
 
     # Check control sum
+    # @param self, bytearray(30) bFrame
+    # @return int
     def CheckCSum(self, bFrame):
         cSum = self.CalcCSum(bFrame)
         if cSUM == bFrame[2]:
@@ -34,53 +38,47 @@ class C14_RS485:
             return 0
 
     # Read from serial Port
-    def SerialRequest(self, RequestFrame):
-        RequestFrame[2] = CalcCSum(RequestFrame)
-        RequestFrame[29] = ord('#')
+    # @param self, bytearray(30) bFrame
+    # @return bytearray(30)
+    def SerialRequest(self, byref(bFrame)):
+        bFrame[2] = CalcCSum(bFrame)
+        bFrame[29] = ord('#')
         try:
             ser = serial.Serial(self.SerialPort, self.BaudRate, timeout=1)
             ser.setRTS(0) # RTS=1,~RTS=0 so ~RE=0, Receive mode enabled for MAX485
             ser.setDTR(0)
             ser.open()
-            ser.write(RequestFrame) # send request frame
+            ser.write(bFrame) # send request frame
             time.sleep(3) # set empirically
-            ReceiveFrame = bytearray(ser.read(size=self.FrameSize)) # receive request frame
+            bFrame = bytearray(ser.read(size=self.FrameSize)) # receive request frame
             ser.close()
         except serial.SerialException:
             continue
 
-        if CheckCSum(ReceiveFrame):
-            return ReceiveFrame
+        if CheckCSum(bFrame):
+            return 1
         else:
-            return -1
+            return 0
 
-    # Read Temperatures
-    def ReadTemps(self):
-        #TODO: Add read temps
-        RequestFrame = b'\0' * 30
-        RequestFrame[0] = 128 + 1 #????
-        RequestFrame[1] = ord('T')
-        RequestFrame[3] = 21
-        nr_temp = 1
-        RequestFrame[5] = nr_temp / 128
-        RequestFrame[6] = nr_temp % 128
-        RecFrame = self.SerialRequest(RequestFrame)
-        return RecFrame
+    # Function ReadValues
+    # Read frames
+    # @param self, char ['T'=temperature/'R'=other parameters] ValueType, byte RecipientAddress, byte SenderAddress, array [max array(6)] ValueNumbers
+    # @return array
+    def ReadValues(self, ValueType, RecipientAddress, SenderAddress, ValueNumbers):
+        bFrame = b'\0' * 30
+        bFrame[0] = 128 + RecipientAddress
+        bFrame[1] = ord(ValueType)
+        bFrame[3] = SenderAddress
+        i = 5
+        for vnr in ValueNumbers:
+            bFrame[i] = vnr / 128
+            bFrame[i + 1] = vnr % 128
+            i += 4
+        ret = self.SerialRequest(bFrame)
+        vnr = 7
+        arVal = [0, 0, 0, 0, 0, 0] # ??
+        for i in range(0, len(ValueNumbers)):
+            arVal[i] = bFrame[tnr] << 8 | bFrame[tnr + 1]
+            vnr += 4
+        return arVal
 
-'''
-    # Read other parameters
-    def ReadParams(self):
-        #TODO: Add read parametes
-        RequestFrame = b'\0' * 30
-        RequestFrame[1] = ord('R')
-        RecFrame = self.SerialRequest(RequestFrame)
-        return RecFrame
-
-    # Write parameters
-    def WriteParams(self):
-        #TODO: Add write parameters
-        RequestFrame = b'\0' * 30
-        RequestFrame[1] = ord('W')
-        RecFrame = self.SerialRequest(RequestFrame)
-        return RecFrame
-'''
