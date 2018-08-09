@@ -61,18 +61,11 @@ class C14_RS485:
         RequestFrame[0] = 128 + 1 #????
         RequestFrame[1] = ord('T')
         RequestFrame[3] = 21
-        RequestFrame[5] = 1 / 128
-        RequestFrame[6] = 1 % 128
-        RequestFrame[9] = 2 / 128
-        RequestFrame[10] = 2 % 128
-        RequestFrame[13] = 3 / 128
-        RequestFrame[14] = 3 % 128
-        RequestFrame[17] = 4 / 128
-        RequestFrame[18] = 4 % 128
-        RequestFrame[21] = 5 / 128
-        RequestFrame[22] = 5 % 128
-        RequestFrame[25] = 6 / 128
-        RequestFrame[26] = 6 % 128
+        nr = 0
+        for i in range(5, 25, 4):
+            RequestFrame[i] = nr / 128
+            RequestFrame[i + 1] = nr % 128
+            nr += 1
         RecFrame = self.SerialRequest(RequestFrame)
         return RecFrame
 
