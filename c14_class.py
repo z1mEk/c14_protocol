@@ -1,5 +1,5 @@
 ######################################################################################
-# Descirption: C14 Protocol python class
+# Descirption: C14_RS485 Protocol python class
 # author: Gabriel Zima (z1mEk)
 # e-mail: gabriel.zima@wp.pl
 # github: https://github.com/z1mEk/c14_protocol.git
@@ -9,14 +9,13 @@
 
 import serial, time
 
-class C14:
+class C14_RS485:
+
     def __init__(self):
         self.SerialPort = "/dev/ttyUSB0"           # Device name of the serial port (USB adapter > RS485). TODO: change to init parameter.
         self.BaudRate = 9600                       # Serial baud rate
-        self.RequestFrame = b'\0' * 30             # Empty buffor frame
-        self.FrameSize = len(self.RequestFrame)    # Size of frame
 
-   # Calculate control sum
+    # Calculate control sum
     def CalcCSum(self, bFrame):
         i = 0
         cSum = 0
@@ -24,7 +23,7 @@ class C14:
             if i != 2:
                 cSum += x
             i += 1
-        return cSum & 0x7
+        return cSum & 0x7f # ?? check
 
     # Check control sum
     def CheckCSum(self, bFrame):
@@ -58,15 +57,30 @@ class C14:
     # Read Temperatures
     def ReadTemps(self):
         #TODO: Add read temps
-	RequestFrame = self.RequestFrame
-	RequestFrame[1] = ord('T')
+        RequestFrame = b'\0' * 30
+        RequestFrame[0] = 128 + 1 #????
+        RequestFrame[1] = ord('T')
+        RequestFrame[3] = 21
+        RequestFrame[5] = 1 / 128
+        RequestFrame[6] = 1 % 128
+        RequestFrame[9] = 2 / 128
+        RequestFrame[10] = 2 % 128
+        RequestFrame[13] = 3 / 128
+        RequestFrame[14] = 3 % 128
+        RequestFrame[17] = 4 / 128
+        RequestFrame[18] = 4 % 128
+        RequestFrame[21] = 5 / 128
+        RequestFrame[22] = 5 % 128
+        RequestFrame[25] = 6 / 128
+        RequestFrame[26] = 6 % 128
         RecFrame = self.SerialRequest(RequestFrame)
         return RecFrame
 
+'''
     # Read other parameters
     def ReadParams(self):
-	#TODO: Add read parametes
-        RequestFrame = self.RequestFrame
+        #TODO: Add read parametes
+        RequestFrame = b'\0' * 30
         RequestFrame[1] = ord('R')
         RecFrame = self.SerialRequest(RequestFrame)
         return RecFrame
@@ -74,7 +88,8 @@ class C14:
     # Write parameters
     def WriteParams(self):
         #TODO: Add write parameters
-        RequestFrame = self.RequestFrame
+        RequestFrame = b'\0' * 30
         RequestFrame[1] = ord('W')
         RecFrame = self.SerialRequest(RequestFrame)
         return RecFrame
+'''
