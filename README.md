@@ -1,4 +1,4 @@
 # c14_protocol
 SolarComp971
 
-Code is not ready - work in progress :)
+Work in progress - non tested :)
