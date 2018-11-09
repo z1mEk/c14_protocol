@@ -14,6 +14,7 @@ class C14_RS485:
     def __init__(self, SerialPort):
         self.SerialPort = SerialPort
         self.BaudRate = 9600
+        self.bFrame = b'\0' * 30
 
         logging.basicConfig(filename='/home/pi/C14_class.log', level=logging.DEBUG) # For silent set logging.CRTITICAL, please set path to log file.
         logging.debug('Started')
@@ -43,9 +44,9 @@ class C14_RS485:
     # Read frame from serial port
     # @param self, bytearray(30) bFrame
     # @return int
-    def SerialRequest(self, byref(bFrame)):
-        bFrame[2] = CalcChecksum(bFrame)
-        bFrame[29] = ord('#')
+    def SerialRequest(self):
+        self.bFrame[2] = CalcChecksum(self.bFrame)
+        self.bFrame[29] = ord('#')
         try:
             logging.debug('Open serial...')
             ser = serial.Serial(self.SerialPort, self.BaudRate, timeout=1)
@@ -54,20 +55,20 @@ class C14_RS485:
             ser.open()
             logging.debug('OK')
             logging.debug('Write query...')
-            logging.debug('Send data: '.join("{:02x}".format(x) for x in bFrame)
-            ser.write(bFrame) # send request frame
+            logging.debug('Send data: '.join("{:02x}".format(x) for x in self.bFrame)
+            ser.write(self.bFrame) # send request frame
             logging.debug('OK')
             time.sleep(3) # set empirically
             logging.debug('Read frame...')
-            bFrame = bytearray(ser.read(size=len(bFrame))) # receive request frame
-            logging.debug('Receive data: '.join("{:02x}".format(x) for x in bFrame)
+            self.bFrame = bytearray(ser.read(size=len(self.bFrame))) # receive request frame
+            logging.debug('Receive data: '.join("{:02x}".format(x) for x in self.bFrame)
             logging.debug('OK')
             ser.close()
         except serial.SerialException:
             logging.debug('Serial error!')
             continue
 
-        if ValidChecksum(bFrame):
+        if ValidChecksum(self.bFrame):
             logging.debug('Checksum OK')
             return 1
         else:
@@ -78,20 +79,20 @@ class C14_RS485:
     # @param self, char ['T'=temperature/'R'=other parameters] ValueType, byte RecipientAddress, byte SenderAddress, list [max list(6)] ValueNumbers
     # @return list
     def ReadValues(self, ValueType, RecipientAddress, SenderAddress, ValueNumbers):
-        bFrame = b'\0' * 30
-        bFrame[0] = 128 + RecipientAddress
-        bFrame[1] = ord(ValueType)
-        bFrame[3] = SenderAddress
+        self.bFrame = b'\0' * 30 # reset bFrame
+        self.bFrame[0] = 128 + RecipientAddress
+        self.bFrame[1] = ord(ValueType)
+        self.bFrame[3] = SenderAddress
         i = 5
         for vnr in ValueNumbers:
-            bFrame[i] = vnr / 128
-            bFrame[i + 1] = vnr % 128
+            self.bFrame[i] = vnr / 128
+            self.bFrame[i + 1] = vnr % 128
             i += 4
-        self.SerialRequest(bFrame)
+        self.SerialRequest()
         vnr = 7
         arVal = []
         for i in range(0, len(ValueNumbers)):
-            arVal.append(bFrame[vnr] << 8 | bFrame[vnr + 1])
+            arVal.append(self.bFrame[vnr] << 8 | self.bFrame[vnr + 1])
             vnr += 4
         return arVal
 
