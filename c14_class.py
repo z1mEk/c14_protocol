@@ -54,14 +54,15 @@ class C14_RS485:
             ser.setDTR(0)
             ser.open()
             logging.debug('OK')
+            logging.debug('Serial name: '.ser.name)  
             logging.debug('Write query...')
-            logging.debug('Send data: '.join("{:02x}".format(x) for x in self.bFrame)
+            logging.debug('Send data: '.join("{:02x}".format(x) for x in self.bFrame))
             ser.write(self.bFrame) # send request frame
             logging.debug('OK')
             time.sleep(3) # set empirically
             logging.debug('Read frame...')
             self.bFrame = bytearray(ser.read(size=len(self.bFrame))) # receive request frame
-            logging.debug('Receive data: '.join("{:02x}".format(x) for x in self.bFrame)
+            logging.debug('Receive data: '.join("{:02x}".format(x) for x in self.bFrame))
             logging.debug('OK')
             ser.close()
         except serial.SerialException:
