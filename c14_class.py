@@ -14,7 +14,7 @@ class C14_RS485:
     def __init__(self, SerialPort):
         self.SerialPort = SerialPort
         self.BaudRate = 9600
-        self.bFrame = b'\0' * 30
+        self.bFrame = None
 
         logging.basicConfig(filename='/home/pi/C14_class.log', level=logging.DEBUG) # For silent set logging.CRTITICAL, please set path to log file.
         logging.debug('Started')
@@ -29,14 +29,14 @@ class C14_RS485:
             if i != 2:
                 cSum += x
             i += 1
-        return cSum & 0x7f
+        return cSum #& 0x7f
 
     # Validate checksum
     # @param self, bytearray(30) bFrame
     # @return int
     def ValidChecksum(self, bFrame):
         cSum = self.CalcChecksum(bFrame)
-        if cSUM == bFrame[2]:
+        if cSum == bFrame[2]:
             return 1
         else:
             return 0
@@ -45,16 +45,16 @@ class C14_RS485:
     # @param self, bytearray(30) bFrame
     # @return int
     def SerialRequest(self):
-        self.bFrame[2] = CalcChecksum(self.bFrame)
+        self.bFrame[2] = self.CalcChecksum(self.bFrame)
         self.bFrame[29] = ord('#')
         try:
-            logging.debug('Open serial...')
+            logging.debug('Serial initial...')
             ser = serial.Serial(self.SerialPort, self.BaudRate, timeout=1)
             ser.setRTS(0) # RTS=1,~RTS=0 so ~RE=0, Receive mode enabled for MAX485
             ser.setDTR(0)
+            logging.debug('Serial open...')
             ser.open()
             logging.debug('OK')
-            logging.debug('Serial name: '.ser.name)  
             logging.debug('Write query...')
             logging.debug('Send data: '.join("{:02x}".format(x) for x in self.bFrame))
             ser.write(self.bFrame) # send request frame
@@ -67,9 +67,9 @@ class C14_RS485:
             ser.close()
         except serial.SerialException:
             logging.debug('Serial error!')
-            continue
+#            continue
 
-        if ValidChecksum(self.bFrame):
+        if self.ValidChecksum(self.bFrame):
             logging.debug('Checksum OK')
             return 1
         else:
@@ -80,7 +80,7 @@ class C14_RS485:
     # @param self, char ['T'=temperature/'R'=other parameters] ValueType, byte RecipientAddress, byte SenderAddress, list [max list(6)] ValueNumbers
     # @return list
     def ReadValues(self, ValueType, RecipientAddress, SenderAddress, ValueNumbers):
-        self.bFrame = b'\0' * 30 # reset bFrame
+        self.bFrame = list(b'\0' * 30) # reset bFrame
         self.bFrame[0] = 128 + RecipientAddress
         self.bFrame[1] = ord(ValueType)
         self.bFrame[3] = SenderAddress
