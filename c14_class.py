@@ -49,24 +49,35 @@ class C14_RS485:
         self.bFrame[29] = ord('#')
         try:
             logging.debug('Serial initial...')
-            ser = serial.Serial(self.SerialPort, self.BaudRate, timeout=1)
-            ser.setRTS(0) # RTS=1,~RTS=0 so ~RE=0, Receive mode enabled for MAX485
-            ser.setDTR(0)
+            ser = serial.Serial(self.SerialPort, self.BaudRate, timeout=30)
+            ser.setRTS(1) # RTS=1,~RTS=0 so ~RE=0, Receive mode enabled for MAX485
+            ser.setDTR(1)
             logging.debug('Serial open...')
-            ser.open()
+            print('before open')
+            print(ser.name)
+            #ser.open()
+            print('after ')
             logging.debug('OK')
             logging.debug('Write query...')
-            logging.debug('Send data: '.join("{:02x}".format(x) for x in self.bFrame))
-            ser.write(self.bFrame) # send request frame
+            #logging.debug('Send data: '.join("{:02x}".format(x) for )
+            values = bytearray([4, 9, 62, 144, 56, 30, 147, 3, 210, 89, 111, 78, 184, 151, 17, 129])
+            ser.write(values) # send request frame
             logging.debug('OK')
+            print('OK')
             time.sleep(3) # set empirically
             logging.debug('Read frame...')
-            self.bFrame = bytearray(ser.read(size=len(self.bFrame))) # receive request frame
-            logging.debug('Receive data: '.join("{:02x}".format(x) for x in self.bFrame))
+            print('Read frame...')
+            dd = ser.read(size=30)
+#            dd = ser.read_until(expected='#')
+            print('after read')
+            print(len(dd))
+#            self.bFrame = bytearray(ser.read(size=len(self.bFrame))) # receive request frame
+#            logging.debug('Receive data: '.join("{:02x}".format(x) for x in self.bFrame))
             logging.debug('OK')
+            print('OK')
             ser.close()
         except serial.SerialException:
-            logging.debug('Serial error!')
+            logging.debug('Serial error')
 #            continue
 
         if self.ValidChecksum(self.bFrame):
