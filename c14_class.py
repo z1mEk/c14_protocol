@@ -53,7 +53,7 @@ class C14_RS485:
             ser.setRTS(1) # RTS=1,~RTS=0 so ~RE=0, Receive mode enabled for MAX485
             ser.setDTR(1)
             logging.debug('Write query...')
-            logging.debug('Send data: '.join(self.bFrame))
+            logging.debug('Send data: ' + str(self.bFrame))
             ser.write(self.bFrame) # send request frame
             logging.debug('OK')
             print('OK')
@@ -65,7 +65,7 @@ class C14_RS485:
             print('after read')
             print(len(dd))
             self.bFrame = bytearray(ser.read(size=len(self.bFrame))) # receive request frame
-            logging.debug('Receive data: '.join(self.bFrame))
+            logging.debug('Receive data: ' + str(self.bFrame))
             logging.debug('OK')
             print('OK')
             ser.close()
