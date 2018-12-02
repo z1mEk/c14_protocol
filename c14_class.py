@@ -1,4 +1,3 @@
-struct.unpack('e', b'\xa0B')
 ######################################################################################
 # Descirption: C14_RS485 Protocol python class
 # author: Gabriel Zima (z1mEk)
@@ -51,16 +50,16 @@ class C14_RS485:
         bFrame[3] = SenderAddress
         i = 5
         for vnr in ValueNumbers:
-            bFrame[i], bFrame[i + 1] = vnr // 128, vnr % 128
+            bFrame[i:i+1] = bytearray([vnr // 128, vnr % 128])
             i += 4
         bFrame[29] = ord('#')
         bFrame[2] = (sum(bFrame) - bFrame[2]) & 0x7f # checksum
         
-        rbFrame = self.SerialRequest(bFrame)
+        bFrame = self.SerialRequest(bFrame)
         
         vnr = 7
         for i in range(0, len(ValueNumbers)):
-            ValueNumbers[i] = struct.unpack('e', rbFrame[i:i+2])
+            ValueNumbers[i] = struct.unpack('e', bFrame[i:i+1])
             vnr += 4
         return ValueNumbers
 
