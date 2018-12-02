@@ -20,7 +20,7 @@ class C14_RS485:
 
     # Read frame from serial port
     # @param self, bytearray(30) bFrame
-    # @return intgb = bytearray(30)
+    # @return bytearray(30)
     def SerialRequest(self, bFrame):
         try:
             logging.debug('Serial initial...')
@@ -54,7 +54,7 @@ class C14_RS485:
         bFrame[1] = ord(ValueType)
         bFrame[3] = SenderAddress
         i = 5
-        for vnr in ValueNumbers: # ??
+        for vnr in ValueNumbers:
             bFrame[i] = vnr // 128
             bFrame[i + 1] = vnr % 128
             i += 4
