@@ -16,6 +16,7 @@ class C14_RS485:
         self.BaudRate = 9600
 
         logging.basicConfig(filename='/home/pi/C14_class.log', level=logging.DEBUG) # For silent set logging.CRTITICAL, please set path to log file.
+        logging.getLogger('').addHandler(console)
         logging.debug('Started')
 
     # Read frame from serial port
