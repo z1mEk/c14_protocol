@@ -27,19 +27,14 @@ class C14_RS485:
             ser = serial.Serial(self.SerialPort, self.BaudRate, timeout=30)
             ser.setRTS(1) # RTS=1,~RTS=0 so ~RE=0, Receive mode enabled for MAX485
             ser.setDTR(1)
-            logging.debug('Write query...')
             logging.debug('Send data: ' + str(bFrame))
             ser.write(bFrame) # send request frame
             logging.debug('OK')
-            print('OK')
             time.sleep(3) # set empirically
             logging.debug('Read frame...')
-            print('Read frame...')
 #            bFrame = ser.read_until(expected='#') # receive request frame until # character
             bFrame = ser.read(size=len(bFrame)) # receive request frame
             logging.debug('Receive data: ' + str(bFrame))
-            logging.debug('OK')
-            print('OK')
             ser.close()
         except serial.SerialException:
             logging.debug('Serial error')
@@ -59,7 +54,7 @@ class C14_RS485:
             bFrame[i + 1] = vnr % 128
             i += 4
         bFrame[29] = ord('#')
-        bFrame[2] = (sum(bFrame) - bFrame[2]) & 0x7f
+        bFrame[2] = (sum(bFrame) - bFrame[2]) & 0x7f # checksum
         rbFrame = self.SerialRequest(bFrame)
         #vnr = 7
         #arVal = []
