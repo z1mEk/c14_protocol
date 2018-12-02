@@ -14,7 +14,7 @@ class C14_RS485:
     def __init__(self, SerialPort):
         self.SerialPort = SerialPort
         self.BaudRate = 9600
-        self.bFrame = None
+        self.bFrame = bytearray(30)
 
         logging.basicConfig(filename='/home/pi/C14_class.log', level=logging.DEBUG) # For silent set logging.CRTITICAL, please set path to log file.
         logging.debug('Started')
@@ -29,7 +29,7 @@ class C14_RS485:
             if i != 2:
                 cSum += x
             i += 1
-        return cSum #& 0x7f
+        return cSum & 0x7f
 
     # Validate checksum
     # @param self, bytearray(30) bFrame
@@ -59,8 +59,8 @@ class C14_RS485:
             print('after ')
             logging.debug('OK')
             logging.debug('Write query...')
-            #logging.debug('Send data: '.join("{:02x}".format(x) for )
-            values = bytearray([4, 9, 62, 144, 56, 30, 147, 3, 210, 89, 111, 78, 184, 151, 17, 129])
+            #logging.debug('Send data: '.join("{:02x}".format(x) for self.bFrame)
+            values = self.bFrame
             ser.write(values) # send request frame
             logging.debug('OK')
             print('OK')
@@ -91,7 +91,7 @@ class C14_RS485:
     # @param self, char ['T'=temperature/'R'=other parameters] ValueType, byte RecipientAddress, byte SenderAddress, list [max list(6)] ValueNumbers
     # @return list
     def ReadValues(self, ValueType, RecipientAddress, SenderAddress, ValueNumbers):
-        self.bFrame = list(b'\0' * 30) # reset bFrame
+        self.bFrame = bytearray(30)
         self.bFrame[0] = 128 + RecipientAddress
         self.bFrame[1] = ord(ValueType)
         self.bFrame[3] = SenderAddress
@@ -104,7 +104,7 @@ class C14_RS485:
         vnr = 7
         arVal = []
         for i in range(0, len(ValueNumbers)):
-            arVal.append(self.bFrame[vnr] << 8 | self.bFrame[vnr + 1])
+            arVal.append(self.bFrame[vnr] << 7 | self.bFrame[vnr + 1])
             vnr += 4
         return arVal
 
