@@ -7,7 +7,7 @@
 # update date: 2018-08-09
 ######################################################################################
 
-import serial, time, logging
+import serial, time, logging, struct
 
 class C14_RS485:
 
@@ -50,16 +50,16 @@ class C14_RS485:
         bFrame[3] = SenderAddress
         i = 5
         for vnr in ValueNumbers:
-            bFrame[i] = vnr // 128
-            bFrame[i + 1] = vnr % 128
+            bFrame[i], bFrame[i + 1] = vnr // 128, vnr % 128
             i += 4
         bFrame[29] = ord('#')
         bFrame[2] = (sum(bFrame) - bFrame[2]) & 0x7f # checksum
         rbFrame = self.SerialRequest(bFrame)
-        #vnr = 7
-        #arVal = []
-        #for i in range(0, len(ValueNumbers)):
-        #    arVal.append(rbFrame[vnr] << 0x07 | float(rbFrame[vnr + 1]))
-        #    vnr += 4
+        vnr = 7
+        arVal = []
+        for i in range(0, len(ValueNumbers)):
+            arVal.append(rbFrame[vnr] << 0x07 | float(rbFrame[vnr + 1]))
+            arVal.append(struct.unpack('e', rbFrame[i:i+2])
+            vnr += 4
         return rbFrame
 
