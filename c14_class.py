@@ -53,7 +53,7 @@ class C14_RS485:
             bFrame[i:i+1] = bytearray([vnr // 128, vnr % 128])
             i += 4
         bFrame[29] = ord('#')
-        bFrame[2] = (sum(bFrame) - bFrame[2]) & 0x7f # checksum
+        bFrame[2] = (sum(bFrame) - bFrame[2]) & 127 # checksum
         
         bFrame = self.SerialRequest(bFrame)
         
