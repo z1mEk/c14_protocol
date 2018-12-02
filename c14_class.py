@@ -52,16 +52,9 @@ class C14_RS485:
             ser = serial.Serial(self.SerialPort, self.BaudRate, timeout=30)
             ser.setRTS(1) # RTS=1,~RTS=0 so ~RE=0, Receive mode enabled for MAX485
             ser.setDTR(1)
-            logging.debug('Serial open...')
-            print('before open')
-            print(ser.name)
-            #ser.open()
-            print('after ')
-            logging.debug('OK')
             logging.debug('Write query...')
-            #logging.debug('Send data: '.join("{:02x}".format(x) for self.bFrame)
-            values = self.bFrame
-            ser.write(values) # send request frame
+            logging.debug('Send data: '.join(self.bFrame))
+            ser.write(self.bFrame) # send request frame
             logging.debug('OK')
             print('OK')
             time.sleep(3) # set empirically
@@ -71,8 +64,8 @@ class C14_RS485:
 #            dd = ser.read_until(expected='#')
             print('after read')
             print(len(dd))
-#            self.bFrame = bytearray(ser.read(size=len(self.bFrame))) # receive request frame
-#            logging.debug('Receive data: '.join("{:02x}".format(x) for x in self.bFrame))
+            self.bFrame = bytearray(ser.read(size=len(self.bFrame))) # receive request frame
+            logging.debug('Receive data: '.join(self.bFrame))
             logging.debug('OK')
             print('OK')
             ser.close()
@@ -83,7 +76,7 @@ class C14_RS485:
         if self.ValidChecksum(self.bFrame):
             logging.debug('Checksum OK')
             return 1
-        else:
+        else:gb = bytearray(30)
             logging.debug('Invalid Checksum')
             return 0
 
