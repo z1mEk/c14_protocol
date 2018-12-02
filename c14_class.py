@@ -31,16 +31,6 @@ class C14_RS485:
             i += 1
         return cSum & 0x7f
 
-    # Validate checksum
-    # @param self, bytearray(30) bFrame
-    # @return int
-    def ValidChecksum(self, bFrame):
-        cSum = self.CalcChecksum(bFrame)
-        if cSum == bFrame[2]:
-            return 1
-        else:
-            return 0
-
     # Read frame from serial port
     # @param self, bytearray(30) bFrame
     # @return int
@@ -73,10 +63,10 @@ class C14_RS485:
             logging.debug('Serial error')
 #            continue
 
-        if self.ValidChecksum(self.bFrame):
+        if self.CalcChecksum(self.bFrame) == self.bFrame[2]:
             logging.debug('Checksum OK')
             return 1
-        else:gb = bytearray(30)
+        else:
             logging.debug('Invalid Checksum')
             return 0
 
