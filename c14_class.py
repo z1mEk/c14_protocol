@@ -54,17 +54,17 @@ class C14_RS485:
         bFrame[1] = ord(ValueType)
         bFrame[3] = SenderAddress
         i = 5
-        for vnr in ValueNumbers:
+        for vnr in ValueNumbers: # ??
             bFrame[i] = vnr / 128
             bFrame[i + 1] = vnr % 128
             i += 4
         bFrame[29] = ord('#')
         bFrame[2] = (sum(bFrame) - bFrame[2]) & 0x7f
-        rbFrame = self.SerialRequest(bFrame)dd
+        rbFrame = self.SerialRequest(bFrame)
         #vnr = 7
         #arVal = []
         #for i in range(0, len(ValueNumbers)):
-        #    arVal.append(rbFrame[vnr] << 0x07 | rbFrame[vnr + 1])
+        #    arVal.append(rbFrame[vnr] << 0x07 | float(rbFrame[vnr + 1]))
         #    vnr += 4
         return rbFrame
 
