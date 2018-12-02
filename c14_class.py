@@ -60,11 +60,11 @@ class C14_RS485:
             i += 4
         bFrame[29] = ord('#')
         bFrame[2] = (sum(bFrame) - bFrame[2]) & 0x7f
-        rbFrame = self.SerialRequest(bFrame)
+        rbFrame = self.SerialRequest(bFrame)dd
         vnr = 7
         arVal = []
         for i in range(0, len(ValueNumbers)):
-            arVal.append(rbFrame[vnr] << 7 | rbFrame[vnr + 1])
+            arVal.append(rbFrame[vnr] << 0x07 | rbFrame[vnr + 1])
             vnr += 4
         return arVal
 
