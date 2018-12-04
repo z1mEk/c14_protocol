@@ -16,8 +16,8 @@ class C14_RS485:
         self.BaudRate = 9600
 
         logging.basicConfig(filename='/home/pi/C14_class.log', level=logging.DEBUG) # For silent set logging.CRTITICAL, please set path to log file.
-        logging.getLogger('').addHandler(console)
         logging.debug('Started')
+        print('Started')
 
     # Read frame from serial port
     # @param self, bytearray(30) bFrame
@@ -25,20 +25,25 @@ class C14_RS485:
     def SerialRequest(self, bFrame):
         try:
             logging.debug('Serial initial...')
-            ser = serial.Serial(self.SerialPort, self.BaudRate, timeout=30)
+            print('Serial initial...')
+            ser = serial.Serial(self.SerialPort, self.BaudRate, timeout=3, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE)
             ser.setRTS(1) # RTS=1,~RTS=0 so ~RE=0, Receive mode enabled for MAX485
             ser.setDTR(1)
             logging.debug('Send data: ' + str(bFrame))
+            print('Send data: ' + str(bFrame))
             ser.write(bFrame) # send request frame
             logging.debug('OK')
+            print('OK')
             time.sleep(3) # set empirically
             logging.debug('Read frame...')
-#            bFrame = ser.read_until(expected='#') # receive request frame until # character
+            print('Read frame...')
             bFrame = ser.read(size=len(bFrame)) # receive request frame
             logging.debug('Receive data: ' + str(bFrame))
+            print('Receive data: ' + str(bFrame))
             ser.close()
         except serial.SerialException:
             logging.debug('Serial error')
+            print('Serial error')
         return bFrame
 
     # Read values to array
