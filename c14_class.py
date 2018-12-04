@@ -65,7 +65,7 @@ class C14_RS485:
         
         vnr = 7
         for i in range(0, len(ValueNumbers)):
-            ValueNumbers[i] = struct.unpack('e', bFrame[i:i+2])
+            ValueNumbers[i] = (bFrame[vnr] + 2000) // 128 + ((bFrame[vnr+1] + 2000) % 128) / 10
             vnr += 4
         return ValueNumbers
 
