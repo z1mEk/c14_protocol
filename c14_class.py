@@ -37,14 +37,15 @@ class C14_RS485:
             time.sleep(3) # set empirically
             logging.debug('Read frame...')
             print('Read frame...')
-            bFrame = ser.read(size=len(bFrame)) # receive request frame
+            brFrame = bytes(30)
+            brFrame = ser.read(size=len(brFrame)) # receive request frame
             logging.debug('Receive data: ' + str(bFrame))
-            print('Receive data: ' + str(bFrame))
+            print('Receive data: ' + str(brFrame))
             ser.close()
         except serial.SerialException:
             logging.debug('Serial error')
             print('Serial error')
-        return bFrame
+        return brFrame
 
     # Read values to array
     # @param self, char ['T'=temperature/'R'=other parameters] ValueType, byte RecipientAddress, byte SenderAddress, list [max list(6)] ValueNumbers
@@ -56,16 +57,16 @@ class C14_RS485:
         bFrame[3] = SenderAddress
         i = 5
         for vnr in ValueNumbers:
-            bFrame[i:i+2] = bytearray([vnr // 128, vnr % 128])
+            bFrame[i:i+2] = bytes([vnr // 128, vnr % 128])
             i += 4
         bFrame[29] = ord('#')
         bFrame[2] = (sum(bFrame) - bFrame[2]) & 127 # checksum
         
-        bFrame = self.SerialRequest(bFrame)
+        brFrame = self.SerialRequest(bytes(bFrame))
         
         vnr = 7
         for i in range(0, len(ValueNumbers)):
-            ValueNumbers[i] = (bFrame[vnr] + 2000) // 128 + ((bFrame[vnr+1] + 2000) % 128) / 10
+            ValueNumbers[i] = (brFrame[vnr] + 2000) // 128 + ((brFrame[vnr+1] + 2000) % 128) / 10
             vnr += 4
         return ValueNumbers
 
