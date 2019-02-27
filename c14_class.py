@@ -37,8 +37,7 @@ class C14_RS485:
             time.sleep(3) # set empirically
             logging.debug('Read frame...')
             print('Read frame...')
-            brFrame = bytes(30)
-            brFrame = ser.read(size=len(brFrame)) # receive request frame
+            brFrame = ser.read(size=30) # receive request frame
             logging.debug('Receive data: ' + str(bFrame))
             print('Receive data: ' + str(brFrame))
             ser.close()
