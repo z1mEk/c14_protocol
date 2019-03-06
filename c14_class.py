@@ -31,6 +31,7 @@ class C14_RS485:
             ser.setDTR(1)
             logging.debug('Send data: ' + str(bFrame))
             print('Send data: ' + str(bFrame))
+            print(list(bFrame))
             ser.write(bFrame) # send request frame
             logging.debug('OK')
             print('OK')
@@ -38,8 +39,9 @@ class C14_RS485:
             logging.debug('Read frame...')
             print('Read frame...')
             brFrame = ser.read(size=30) # receive request frame
-            logging.debug('Receive data: ' + str(bFrame))
+            logging.debug('Receive data: ' + str(brFrame))
             print('Receive data: ' + str(brFrame))
+            print(list(brFrame))
             ser.close()
         except serial.SerialException:
             logging.debug('Serial error')
@@ -51,18 +53,27 @@ class C14_RS485:
     # @return list
     def ReadValues(self, ValueType, RecipientAddress, SenderAddress, ValueNumbers):
         bFrame = bytearray(30)
+        #bFrame = [0] * 30
         bFrame[0] = 128 + RecipientAddress
         bFrame[1] = ord(ValueType)
         bFrame[3] = SenderAddress
         i = 5
         for vnr in ValueNumbers:
-            bFrame[i:i+2] = [vnr // 128, vnr % 128]
+            #bFrame[i:i+1] = [vnr // 128, vnr % 128]
+            bFrame[i] = vnr // 128
+            bFrame[i+1] = vnr % 128
             i += 4
         bFrame[29] = ord('#')
         bFrame[2] = (sum(bFrame) - bFrame[2]) & 0x7F # checksum
-        
+
         brFrame = self.SerialRequest(bytes(bFrame))
-        
+
+        chsum = (sum(list(brFrame)) - list(brFrame)[2]) & 0x7F
+        if chsum != list(brFrame)[2]:
+            print("Niepoprawna suma kontrolna: " + str(chsum))
+        else:
+            print("Suma kontrolna OK: " + str(chsum))
+
         vnr = 7
         for i in range(0, len(ValueNumbers)):
             ValueNumbers[i] = (brFrame[vnr] + 2000) // 128 + ((brFrame[vnr+1] + 2000) % 128) / 10
