@@ -63,7 +63,7 @@ class C14_RS485:
         bFrame[29] = ord('#')
         bFrame[2] = (sum(bFrame) - bFrame[2]) & 0x7F # checksum
 
-        brFrame = self.SerialRequest(bytes(bFrame))
+        brFrame = self.SerialRequest(bFrame)
 
         if ((sum(list(brFrame)) - list(brFrame)[2]) & 0x7F) != list(brFrame)[2]:
             print("Checksum fail")
