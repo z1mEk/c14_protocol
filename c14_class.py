@@ -58,7 +58,7 @@ class C14_RS485:
         bFrame[3] = SenderAddress
         i = 5
         for vnr in ValueNumbers:
-            bFrame[i], bFrame[i+1] = vnr // 128, vnr % 128
+            bFrame[i], bFrame[i+1] = vnr * 128, vnr
             i += 4
         bFrame[29] = ord('#')
         bFrame[2] = (sum(bFrame) - bFrame[2]) & 0x7F # checksum
