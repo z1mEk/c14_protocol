@@ -72,7 +72,7 @@ class C14_RS485:
 
         vnr = 7
         for i in range(0, len(ValueNumbers)):
-            ValueNumbers[i] = (((brFrame[vnr] + 2000) // 128) + ((brFrame[vnr+1] + 2000) % 128)) / 10
+            ValueNumbers[i] = (brFrame[vnr] * 128 + brFrame[vnr+1] - 2000) * 0.1
             vnr += 4
         return ValueNumbers
 
