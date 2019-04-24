@@ -4,7 +4,7 @@
 # e-mail: gabriel.zima@wp.pl
 # github: https://github.com/z1mEk/c14_protocol.git
 # create date: 2018-08-09
-# update date: 2018-08-09
+# update date: 2019-04-24
 ######################################################################################
 
 import serial, time, logging, struct
