@@ -7,7 +7,7 @@
 # update date: 2019-04-24
 ######################################################################################
 
-import serial, time, logging, struct
+import serial, time
 
 class C14_RS485:
 
@@ -15,8 +15,6 @@ class C14_RS485:
         self.SerialPort = SerialPort
         self.BaudRate = 9600
 
-        logging.basicConfig(filename='/home/pi/C14_class.log', level=logging.DEBUG) # For silent set logging.CRTITICAL, please set path to log file.
-        logging.debug('Started')
         print('Started')
 
     # Read frame from serial port
@@ -24,27 +22,19 @@ class C14_RS485:
     # @return bytearray(30)
     def SerialRequest(self, bFrame):
         try:
-            logging.debug('Serial initial...')
             print('Serial initial...')
             ser = serial.Serial(self.SerialPort, self.BaudRate, timeout=3, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE)
             ser.setRTS(1) # RTS=1,~RTS=0 so ~RE=0, Receive mode enabled for MAX485
             ser.setDTR(1)
-            logging.debug('Send data: ' + str(bFrame))
             print('Send data: ' + str(bFrame))
-            print(list(bFrame))
             ser.write(bFrame) # send request frame
-            logging.debug('OK')
             print('OK')
             time.sleep(3) # set empirically
-            logging.debug('Read frame...')
             print('Read frame...')
             brFrame = ser.read(size=30) # receive request frame
-            logging.debug('Receive data: ' + str(brFrame))
             print('Receive data: ' + str(brFrame))
-            print(list(brFrame))
             ser.close()
         except serial.SerialException:
-            logging.debug('Serial error')
             print('Serial error')
         return brFrame
 
