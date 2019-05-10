@@ -4,7 +4,7 @@
 # e-mail: gabriel.zima@wp.pl
 # github: https://github.com/z1mEk/c14_protocol.git
 # create date: 2018-08-09
-# update date: 2019-04-24
+# update date: 2019-05-10
 ######################################################################################
 
 import serial, time
@@ -14,7 +14,6 @@ class C14_RS485:
     def __init__(self, SerialPort):
         self.SerialPort = SerialPort
         self.BaudRate = 9600
-
         print('Started')
 
     # Read frame from serial port
@@ -54,9 +53,14 @@ class C14_RS485:
         bFrame[2] = (sum(bFrame) - bFrame[2]) & 0x7F # checksum
 
         brFrame = self.SerialRequest(bFrame)
+        
+        if ValueType != chr(list(brFrame)[1]).upper():
+            print("Invalid type data parameter")
+            return []
 
         if ((sum(list(brFrame)) - list(brFrame)[2]) & 0x7F) != list(brFrame)[2]:
             print("Checksum fail")
+            return []
         else:
             print("Checksum OK")
 
