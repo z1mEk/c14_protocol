@@ -7,6 +7,7 @@
         <param field="Address" label="Port USB" width="100px" required="true" default="/dev/ttyUSB1"/>
         <param field="Mode1" label="Rejestry danych" width="400px" required="true" default="T;100;1;1,2,3,4"/>
         <param field="Mode2" label="Częstotliwość odczytu" width="30px" required="true" default="60"/>
+        <param field="Mode3" label="Interwał między odczytami" width="30px" required="true" default="3"/>
         <param field="Mode6" label="Debug" width="75px">
             <options>
                 <option label="True" value="Debug"/>
@@ -69,7 +70,7 @@ class BasePlugin:
                 onMessage(request_data, receive_data)
             else:
                 Domoticz.Debug("Błąd odczytu danych")
-            time.sleep(3)
+            time.sleep(int(Parameters["Mode3"]))
 
 global _plugin
 _plugin = BasePlugin()
