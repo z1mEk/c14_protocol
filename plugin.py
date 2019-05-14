@@ -5,7 +5,7 @@
     </description>
     <params>
         <param field="Address" label="Port USB" width="100px" required="true" default="/dev/ttyUSB1"/>
-        <param field="Mode1" label="Rejestry danych" width="400px" required="true" default="T;100;1;[1,2,3,4]"/>
+        <param field="Mode1" label="Rejestry danych" width="400px" required="true" default="T;100;1;1,2,3,4"/>
         <param field="Mode2" label="Częstotliwość odczytu" width="30px" required="true" default="60"/>
         <param field="Mode6" label="Debug" width="75px">
             <options>
@@ -17,7 +17,7 @@
 </plugin>
 """
 
-import Domoticz, ast, time
+import Domoticz, time
 from c14_class import C14_RS485
 
 class BasePlugin:
@@ -63,7 +63,7 @@ class BasePlugin:
         Domoticz.Debug("onHeartbeat called")
         for i, x in enumerate(Parameters["Mode1"].split("|")):
             device_type, device_recipient, device_sender, device_registers = x.split(";")
-            request_data = ast.literal_eval(device_registers)
+            request_data = device_registers.split(",")
             receive_data = self.c14.ReadValues(device_type, device_recipient, device_sender, request_data)
             if len(receive_data) == len(request_data):
                 onMessage(request_data, receive_data)
