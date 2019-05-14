@@ -18,10 +18,9 @@
 """
 
 import Domoticz, ast, time
-from c12_class import C14_RS485
+from c14_class import C14_RS485
 
 class BasePlugin:
-    rs485 = none
     units = {"T":"Temperature", "P":"Percentage", "B":"Barometer", "C":"Custom"}
     c14 = none
 
@@ -48,8 +47,8 @@ class BasePlugin:
 
     def onMessage(self, Connection, Data):
         Domoticz.Debug("onMessage called")
-        for i, device_unit in enumerate(Data[0]):
-            Devices[device_unit].Update(0, Data[1][i])
+        for i, device_unit in enumerate(Connection):
+            Devices[device_unit].Update(0, Data[i])
 
     def onCommand(self, Unit, Command, Level, Hue):
         Domoticz.Debug("onCommand called for Unit " + str(Unit) + ": Parameter '" + str(Command) + "', Level: " + str(Level) + "', Hue: " + str(Hue))
@@ -67,7 +66,9 @@ class BasePlugin:
             request_data = ast.literal_eval(device_registers)
             receive_data = self.c14.ReadValues(device_type, device_recipient, device_sender, request_data)
             if len(receive_data) == len(request_data):
-                onMessage(self.rs485, [request_data, receive_data])
+                onMessage(request_data, receive_data)
+            else:
+                Domoticz.Debug("Błąd odczytu danych")
             time.sleep(3)
 
 global _plugin
