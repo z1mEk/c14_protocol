@@ -18,8 +18,68 @@
 </plugin>
 """
 
-import Domoticz, time
-from c14_class import C14_RS485
+import Domoticz, serial, time
+
+class C14_RS485:
+
+    def __init__(self, SerialPort):
+        self.SerialPort = SerialPort
+        self.BaudRate = 9600
+        print('Started')
+
+    # Read frame from serial port
+    # @param self, bytearray(30) bFrame
+    # @return bytearray(30)
+    def SerialRequest(self, bFrame):
+        try:
+            print('Serial initial...')
+            ser = serial.Serial(self.SerialPort, self.BaudRate, timeout=3, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE)
+            ser.setRTS(1) # RTS=1,~RTS=0 so ~RE=0, Receive mode enabled for MAX485
+            ser.setDTR(1)
+            print('Send data: ' + str(bFrame))
+            ser.write(bFrame) # send request frame
+            print('OK')
+            time.sleep(3) # set empirically
+            print('Read frame...')
+            brFrame = ser.read(size=30) # receive request frame
+            print('Receive data: ' + str(brFrame))
+            ser.close()
+        except serial.SerialException:
+            print('Serial error')
+        return brFrame
+
+    # Read values to array
+    # @param self, char ['T'=temperature/'R'=other parameters] ValueType, byte RecipientAddress, byte SenderAddress, list [max list(6)] ValueNumbers
+    # @return list
+    def ReadValues(self, ValueType, RecipientAddress, SenderAddress, ValueNumbers):
+        bFrame = bytearray(30)
+        bFrame[0] = 128 + RecipientAddress
+        bFrame[1] = ord(ValueType)
+        bFrame[3] = SenderAddress
+        i = 5
+        for vnr in ValueNumbers:
+            bFrame[i], bFrame[i+1] = vnr * 128, vnr
+            i += 4
+        bFrame[29] = ord('#')
+        bFrame[2] = (sum(bFrame) - bFrame[2]) & 0x7F # checksum
+
+        brFrame = self.SerialRequest(bFrame)
+        
+        if ValueType != chr(list(brFrame)[1]).upper():
+            print("Invalid type data parameter")
+            return []
+
+        if ((sum(list(brFrame)) - list(brFrame)[2]) & 0x7F) != list(brFrame)[2]:
+            print("Checksum fail")
+            return []
+        else:
+            print("Checksum OK")
+
+        vnr = 7
+        for i in range(0, len(ValueNumbers)):
+            ValueNumbers[i] = (brFrame[vnr] * 128 + brFrame[vnr+1] - 2000) * 0.1
+            vnr += 4
+        return ValueNumbers
 
 class BasePlugin:
     units = {"T":"Temperature", "P":"Percentage", "B":"Barometer", "C":"Custom"}
@@ -30,7 +90,7 @@ class BasePlugin:
             Domoticz.Debugging(1)
         Domoticz.Debug("onStart called")
 
-        self.c14 = c14_class.C14_RS485(Parameters["Address"])
+        self.c14 = C14_RS485(Parameters["Address"])
 
         if (len(Devices) == 0):
             for i, x in enumerate(Parameters["Mode1"].split("|")):
